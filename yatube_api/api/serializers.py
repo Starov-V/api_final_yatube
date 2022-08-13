@@ -4,6 +4,7 @@ from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
 from posts.models import Comment, Post, Group, Follow
 
+
 class GroupSerializer(serializers.ModelSerializer):
     """Сериализатор для групп."""
 
@@ -46,8 +47,9 @@ class FollowSerializer(serializers.ModelSerializer):
     )
     following = serializers.SlugRelatedField(
         slug_field='username',
-        queryset =get_user_model().objects.all()
+        queryset = get_user_model().objects.all()
     )
+
     class Meta:
         """Мета-класс для сериализатора для подписок."""
         fields = '__all__'
@@ -58,6 +60,9 @@ class FollowSerializer(serializers.ModelSerializer):
         following = get_object_or_404(
             get_user_model(), username=data['following']
         )
-        if self.context['request'].user == following or Follow.objects.filter(user=self.context['request'].user, following=following):
+        if (self.context['request'].user == following
+                or Follow.objects.filter(
+                user=self.context['request'].user,
+                following=following)):
             raise serializers.ValidationError
         return data

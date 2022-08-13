@@ -1,13 +1,11 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
-from posts.models import Post, Group, Follow
+from posts.models import Post, Group
 from api.serializers import PostSerializer, GroupSerializer, CommentSerializer, FollowSerializer
 from rest_framework import exceptions
 from rest_framework import permissions
 from rest_framework import filters
-from rest_framework import status
-from rest_framework.response import Response
-from django.contrib.auth import get_user_model
+
 
 
 class PostViewSet(viewsets.ModelViewSet):
