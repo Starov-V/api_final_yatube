@@ -1,8 +1,9 @@
 from rest_framework import serializers
 from rest_framework.relations import SlugRelatedField
 from django.contrib.auth import get_user_model
-from django.shortcuts import get_object_or_404
+
 from posts.models import Comment, Post, Group, Follow
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -29,18 +30,21 @@ class PostSerializer(serializers.ModelSerializer):
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор для комментариев."""
+
     author = serializers.SlugRelatedField(
         read_only=True, slug_field='username'
     )
 
     class Meta:
         """Мета-класс для сериализатора комментариев."""
+
         fields = '__all__'
         model = Comment
 
 
 class FollowSerializer(serializers.ModelSerializer):
     """Сериализатор для подписок."""
+
     user = serializers.SlugRelatedField(
         read_only=True, slug_field='username',
         default=serializers.CurrentUserDefault(),
@@ -52,17 +56,21 @@ class FollowSerializer(serializers.ModelSerializer):
 
     class Meta:
         """Мета-класс для сериализатора для подписок."""
+
         fields = '__all__'
         read_only_fields = ('user', )
         model = Follow
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=['user', 'following'],
+            )
+        ]
 
     def validate(self, data):
-        following = get_object_or_404(
-            get_user_model(), username=data['following']
-        )
-        if (self.context['request'].user == following
+        if (self.context['request'].user == data['following']
                 or Follow.objects.filter(
                 user=self.context['request'].user,
-                following=following)):
+                following=data['following'])):
             raise serializers.ValidationError
         return data

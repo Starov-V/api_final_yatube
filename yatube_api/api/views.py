@@ -1,13 +1,12 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, exceptions, filters, permissions
 from posts.models import Post, Group
 from api.serializers import (PostSerializer,
                              GroupSerializer,
                              CommentSerializer,
                              FollowSerializer)
-from rest_framework import exceptions
-from rest_framework import permissions
-from rest_framework import filters
+from rest_framework.pagination import LimitOffsetPagination
+from api.permissions import AuthorOrReadOnly
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -15,27 +14,12 @@ class PostViewSet(viewsets.ModelViewSet):
 
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (AuthorOrReadOnly,)
+    pagination_class = LimitOffsetPagination
 
     def perform_create(self, serializer):
         """Функция для создания постов."""
         serializer.save(author=self.request.user)
-
-    def perform_update(self, serializer):
-        """Функция для изменения постов."""
-        if serializer.instance.author != self.request.user:
-            raise exceptions.PermissionDenied(
-                'Изменение чужого контента запрещено!'
-            )
-        super(PostViewSet, self).perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        """Функция для удаления постов."""
-        if instance.author != self.request.user:
-            raise exceptions.PermissionDenied(
-                'Удаление чужого контента запрещено!'
-            )
-        instance.delete()
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
@@ -83,7 +67,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 
 class FollowViewSet(viewsets.ModelViewSet):
-    """ViewSet для подписок """
+    """ViewSet для подписок."""
 
     serializer_class = FollowSerializer
     filter_backends = (filters.SearchFilter, )
