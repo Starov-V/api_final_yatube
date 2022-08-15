@@ -52,8 +52,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class FollowViewSet(
     viewsets.GenericViewSet,
     mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin
+    mixins.ListModelMixin
 ):
     """ViewSet для подписок."""
 
