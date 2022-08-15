@@ -68,9 +68,6 @@ class FollowSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, data):
-        if (self.context['request'].user == data['following']
-                or Follow.objects.filter(
-                user=self.context['request'].user,
-                following=data['following'])):
+        if self.context['request'].user == data['following']:
             raise serializers.ValidationError
         return data

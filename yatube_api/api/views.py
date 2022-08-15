@@ -1,5 +1,5 @@
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, exceptions, filters, permissions
+from rest_framework import viewsets, filters, permissions, mixins
 from posts.models import Post, Group
 from api.serializers import (PostSerializer,
                              GroupSerializer,
@@ -27,14 +27,13 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
 
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
     """ViewSet для обработки постов."""
 
     serializer_class = CommentSerializer
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (AuthorOrReadOnly,)
 
     def get_queryset(self):
         """Функция для отображения комментариев."""
@@ -49,24 +48,13 @@ class CommentViewSet(viewsets.ModelViewSet):
         post = get_object_or_404(Post, id=post_id)
         serializer.save(author=self.request.user, post=post)
 
-    def perform_destroy(self, instance):
-        """Функция для удаления комментариев."""
-        if instance.author != self.request.user:
-            raise exceptions.PermissionDenied(
-                'Удаление чужого контента запрещено!'
-            )
-        instance.delete()
 
-    def perform_update(self, serializer):
-        """Функция для изменения комментариев."""
-        if serializer.instance.author != self.request.user:
-            raise exceptions.PermissionDenied(
-                'Изменение чужого контента запрещено!'
-            )
-        super(CommentViewSet, self).perform_update(serializer)
-
-
-class FollowViewSet(viewsets.ModelViewSet):
+class FollowViewSet(
+    viewsets.GenericViewSet,
+    mixins.CreateModelMixin,
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin
+):
     """ViewSet для подписок."""
 
     serializer_class = FollowSerializer
