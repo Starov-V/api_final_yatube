@@ -84,6 +84,3 @@ GET method
 - ##### PyJWT _2.1.0_
 - ##### requests _2.26.0_
 - ##### djoser _2.1.0_
-
-### Some words from author
-##### I'm beginner developer and it was my first api project. It was so hard and it failed without my training team in slack and my code reviewer, who gave me lots of useful tips for my code. In the end, I hope, that I can become professional developer and Yatube api is just the beginning.
